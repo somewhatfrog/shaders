@@ -188,7 +188,7 @@ float getMixValue(float cycle, inout float offset1, inout float offset2)
     return mixval;
 }
 
-/*vec3 getSkyMapVec(vec2 uv)
+vec3 getSkyMapVec(vec2 uv)
 {
     vec3 dir;
     uv = (uv-0.5);
@@ -198,16 +198,6 @@ float getMixValue(float cycle, inout float offset1, inout float offset2)
     dir = normalize(dir);
 
     return dir;
-}*/
-
-vec3 getSkyMapVec(vec2 uv) //somewhatfrog>> relatively correct skybox for isometry
-{
-    uv = uv-0.5;
-    vec3 dir = vec3(uv.x, 0.5, uv.y);
-    //float len = length(dir); //*0.5;
-    dir = normalize(dir);
-    
-    return dir; //*len;
 }
 
 float rainWave(float d) 
