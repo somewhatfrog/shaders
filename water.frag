@@ -327,7 +327,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     vec3 texRefA = texture2D(WaterTextureReflectionA, refTexCoord).rgb;
     vec3 texRefB = texture2D(WaterTextureReflectionB, refTexCoord).rgb;
     vec3 texRef = mix(texRefB, texRefA, min(WReflectionParam, 1.0));
-    fragColor.rgb = mix(fragColor.rgb, texRef, 0.25*dot(gm, posEye));
+    fragColor.rgb = mix(fragColor.rgb, texRef, 0.5*dot(gm, posEye)); //somewhatfrog>>0.25>0.5
 
     //brightness correction
     fragColor.rgb = pow(fragColor.rgb*0.35, vec3(1.0 / 2.2)); //somewhatfrog>>0.7>0.35
