@@ -276,7 +276,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
 
     //normal
     float speed = 50.0*waterSpeed*2;
-    vec2 scale = vec2(0.175, 0.4); //somewhatfrog>>.35>.175
+    vec2 scale = vec2(0.175, 0.4); //somewhatfrog>>0.35>0.175
     float bmp = 0.15; //somewhatfrog>>0.075>0.15
     #ifdef hd_quality
     vec3 g1 = seagrad(scale*p.xz+flow*o1*speed, bmp, t);
@@ -361,3 +361,4 @@ void main()
 {
     mainImage(gl_FragColor, vec2(gl_FragCoord.x/WViewport.z, 1.0-gl_FragCoord.y/WViewport.w));
 }
+
