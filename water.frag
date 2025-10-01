@@ -26,32 +26,33 @@ mat3 rotx(float a) { mat3 rot; rot[0] = vec3(1.0, 0.0, 0.0); rot[1] = vec3(0.0, 
 mat3 roty(float a) { mat3 rot; rot[0] = vec3(cos(a), 0.0, sin(a)); rot[1] = vec3(0.0, 1.0, 0.0); rot[2] = vec3(-sin(a), 0.0, cos(a)); return rot; }
 mat3 rotz(float a) { mat3 rot; rot[0] = vec3(cos(a), -sin(a), 0.0); rot[1] = vec3(sin(a), cos(a), 0.0); rot[2] = vec3(0.0, 0.0, 1.0); return rot; }
 
-const float waterY = 0.0; //water level
+//water level
+const float waterY = 0.0;
 //light
 const vec3 ld = normalize(vec3(0.0, 2.1, 14.0));
 
-float hash(vec2 p) 
+float hash(vec2 p)
 {
     float h = dot(p, vec2(127.1, 311.7));
     return fract(sin(h)*43758.5453123);
 }
 
-float noise(in vec2 p) 
+float noise(in vec2 p)
 {
     vec2 i = floor(p);
     vec2 f = fract(p);
     vec2 u = f*f*(3.0-2.0*f);
-    return -1.0+2.0*mix(mix(hash(i+vec2(0.0, 0.0)), 
-    hash(i+vec2(1.0, 0.0)), u.x), 
-    mix(hash(i+vec2(0.0, 1.0)), 
+    return -1.0+2.0*mix(mix(hash(i+vec2(0.0, 0.0)),
+    hash(i+vec2(1.0, 0.0)), u.x),
+    mix(hash(i+vec2(0.0, 1.0)),
     hash(i+vec2(1.0, 1.0)), u.x), u.y);
 }
 
 #ifdef hd_quality
 vec3 hash3(vec2 p)
 {
-    vec3 q = vec3(dot(p, vec2(145.5, 361.5)), 
-    dot(p, vec2(276.5, 159.5)), 
+    vec3 q = vec3(dot(p, vec2(145.5, 361.5)),
+    dot(p, vec2(276.5, 159.5)),
     dot(p, vec2(471.3, 375.4)));
     return fract(sin(q)*44531.4578);
 }
@@ -60,7 +61,6 @@ float bnoise(in vec2 x)
 {
     vec2 fp = floor(x);
     vec2 ff = fract(x);
-
     float k = 0.0;
     float k2 = 0.0;
     for(int y=-2; y<=2; y++)
@@ -74,7 +74,6 @@ float bnoise(in vec2 x)
         k += o.z*ww;
         k2 += ww;
     }
-
     return k/k2;
 }
 #endif
@@ -83,15 +82,13 @@ vec2 SphereMap(in vec3 inNormal, in vec3 ecPosition3)
 {
     float  m;
     vec3   r, u;
-
     u = normalize(ecPosition3);
     r = reflect(u, -inNormal);
     m = 2.0*sqrt(r.x*r.x+r.y*r.y+(r.z+1.0)*(r.z+1.0));
-
     return vec2 (r.x / m+0.5, r.y / m+0.5);
 }
 
-float water(vec2 uv) 
+float water(vec2 uv)
 {
     return noise(uv*0.8);
 }
@@ -103,7 +100,7 @@ float shoreLine(vec3 rp)
 
 float river(vec2 uv)
 {
-    #ifdef hd_quality
+#ifdef hd_quality
     float s = 0.0;
     const float levels = 1.0;
     mat2 r;
@@ -116,7 +113,7 @@ float river(vec2 uv)
     }
     s /= (levels+1.0);
     return s;
-    #else
+#else
     float s = 0.0;
     const float levels = 1.0;
     mat2 r;
@@ -126,34 +123,33 @@ float river(vec2 uv)
     s += water(uv*2.0);
     s /= (levels+1.0);
     return s;
-    #endif
+#endif
 }
 
 float mapHeightLQ(in vec3 rp)
 {
-    #ifdef hd_quality
+#ifdef hd_quality
     float level = pow(waterDepth, 2.0);
     float levelf = bnoise(5.0*rp.xz)*min(pow(level, 0.3), 1.0)*0.2+pow(level, 0.2)*1.0;
-    #else
+#else
     float levelf = pow(waterDepth, 2.0);
-    #endif
+#endif
     return rp.y+levelf;
 }
 
 vec3 seagrad(in vec2 uv, float bump, float t)
 {
-    #ifdef hd_quality
+#ifdef hd_quality
     uv *= 14.0;
     float hc = river(uv);
     vec2 off = vec2((1.0)/t, 0.0);
     off = vec2(3.0/t, 0.0);
     float hh = river(uv+off);
     float hv = river(uv+off.yx);
-
     vec3 h = normalize(vec3(bump, hh-hc, 0.0));
     vec3 v = normalize(vec3(0., hv-hc, bump));
     return -normalize(cross(h, v));
-    #else
+#else
     uv *= 14.0;
     float hc = river(uv);
     vec2 off = vec2((2.0)/t, 0.0);
@@ -161,13 +157,13 @@ vec3 seagrad(in vec2 uv, float bump, float t)
     vec3 h = normalize(vec3(bump, hh-hc, 0.0));
     vec3 v = normalize(vec3(0., hh-hc, bump));
     return -normalize(cross(h, v));
-    #endif
+#endif
 }
 
 float trace(inout vec3 rp, in vec3 rd)
 {
     float dify = mapHeightLQ(rp);
-    if(dify < 0.0) 
+    if(dify < 0.0)
     {
         return dify;
     }
@@ -180,7 +176,6 @@ float getMixValue(float cycle, inout float offset1, inout float offset2)
     //mixval 0..1..0 over full cycle
     float mixval = cycle*2.0;
     if(mixval > 1.0) mixval = 2.0-mixval;
-
     //texture phase 1
     offset1 = cycle;
     //texture phase 2, phase 1 offset by 0.5
@@ -196,11 +191,10 @@ vec3 getSkyMapVec(vec2 uv)
     dir.z = uv.y;
     dir.y = 0.18*sqrt(1.0+dir.x*dir.x -dir.z*dir.z);
     dir = normalize(dir);
-
     return dir;
 }
 
-float rainWave(float d) 
+float rainWave(float d)
 {
     return sin(31.0*d)*smoothstep(-1.0, -0.5, d)*smoothstep(0., -0.5, d);
 }
@@ -212,13 +206,12 @@ vec3 getRain(vec2 uv)
     //uv *= 0.1;
     //float rainIntersive = 0.7;
     vec2 fuv = floor(uv);
-
     vec2 circles = vec2(0.0);
-    for (float i = 0.0 ; i<0.6 ; i+=0.3) 
+    for (float i = 0.0 ; i<0.6 ; i+=0.3)
     {
-        for (int y = -1; y <= 1; ++y) 
+        for (int y = -1; y <= 1; ++y)
         {
-            for (int x = -1; x <= 1; ++x) 
+            for (int x = -1; x <= 1; ++x)
             {
                 vec2 coord = fuv+vec2(x, y);
                 float subcoord = fract(0.6*WTime+noise(vec2(coord.x+i, coord.y-i)));
@@ -239,73 +232,57 @@ vec3 getRain(vec2 uv)
 void mainImage(out vec4 fragColor, in vec2 fragCoord)
 {
     fragColor = vec4(0.0);
-
     vec2 uv = vec2(fragCoord.x*WOffset.z*0.0008, fragCoord.y*WOffset.a*0.0008)+WOffset.xy*0.0008;
-
     vec3 rainWaves = getRain(uv);
-    #ifdef hd_quality
+#ifdef hd_quality
     float level = pow(waterDepth, 2.0);
     float levelf = min(pow(level, 0.3), 1.0)+level;
-    #else
+#else
     float level = pow(waterDepth, 2.0);
     float levelf = min(pow(level, 0.3), 1.0)+level;
-    #endif
-
+#endif
     vec3 rp = vec3(0.0, 15.0, 5.0-0.001);
-
     //camera
     vec3 rd = vec3(uv.x , -0.4, uv.y);
     vec3 ro = rp;
-
     trace(rp, rd);
-
     vec3 n = vec3(0.0, 1.0, 0.0);
     float t = (waterY-dot(ro, n))/dot(n, rd);
     vec3 p = ro+rd*t;
-
     float T = 4.0;
-
     //texture offsets for advection
     float cycle = mod(WTime, T)/T;
     float o1 = 0.0, o2 = 0.0;
     float mv = getMixValue(cycle, o1, o2);
     float dist = 1.0;
-
     //flow vec
     vec2 flow = vec2(sin(waterFlow), cos(waterFlow))*0.02;
-
     //normal
     float speed = 50.0*waterSpeed*2;
     vec2 scale = vec2(0.175, 0.4); //somewhatfrog>>0.35>0.175
     float bmp = 0.15; //somewhatfrog>>0.075>0.15
-    #ifdef hd_quality
+#ifdef hd_quality
     vec3 g1 = seagrad(scale*p.xz+flow*o1*speed, bmp, t);
     vec3 g2 = seagrad(scale*p.xz+vec2(0.2, 0.2)+flow*o2*speed, bmp, t);
-
     vec3 g3 = seagrad(scale*p.xz+vec2(0.1, 0.2)+flow*o1*speed*0.4, bmp, t);
     vec3 g4 = seagrad(scale*p.xz+vec2(0.3, 0.2)+flow*o2*speed*0.4, bmp, t);
-
     vec3 g5 = seagrad(scale*p.xz*2.0+vec2(0.2, 0.2)+WParamWind*0.2, bmp, t);
     vec3 g6 = seagrad(scale*p.xz*1.5+WParamWind*0.2 , bmp, t);
-
     vec3 gm = mix(g2, g1, mv);
     gm += mix(g4, g3, mv);
     gm += mix(vec3(0.0, 1.0, 0.0), (g5+g6)*0.5, WParamWindSpeed);
     gm += rainWaves.xxy*0.3;
     gm *= 0.7;
     gm = normalize(gm);
-    #else
+#else
     vec3 g1 = seagrad(scale*p.xz+flow*o1*speed, bmp, t);
     vec3 g2 = seagrad(scale*p.xz+vec2(0.2, 0.2)+flow*o2*speed, bmp, t);
-
     vec3 g5 = seagrad(scale*p.xz*2.0+WParamWind *2.0 , bmp, t);
     vec3 g6 = seagrad(scale*p.xz*2.5+WParamWind*2.0, bmp, t);
-
     vec3 gm = mix(g2, g1, mv);
     gm += mix(g5, g6, mv)*WParamWindSpeed;
     gm = normalize(gm);
-    #endif
-
+#endif
     //diffuse water color
     vec4 blue = vec4(0., 95., 190., 0.0) / 255.0; //somewhatfrog>>110>190
     blue *= 0.375; //somewhatfrog>>0.75>0.375
@@ -315,12 +292,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     wd = clamp(wd, 0, 1);
     fragColor = blue*wd*0.3;
     fragColor.rgb += rainWaves.z*0.01;
-    
     //foam
     ///float foam = smoothstep(0.1, -0.5, h+noise(rp.xz*0.15)*0.2); //smoothstep(0.5, -1.4, mixval);
     //fragColor += foam*texture(iChannel2, 0.5*p.xz+sideFlow*o1*speed).rrrr;
     //fragColor += foam*texture(iChannel2, 0.5*p.xz+sideFlow*o2*speed).rrrr;
-
     //reflections
     vec3 posEye = getSkyMapVec(vec2((gl_FragCoord.x-WViewport.x)/WViewport.z, 1.0-(gl_FragCoord.y-WViewport.y)/WViewport.w));
     vec2 refTexCoord = SphereMap(gm, posEye);
@@ -328,21 +303,16 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     vec3 texRefB = texture2D(WaterTextureReflectionB, refTexCoord).rgb;
     vec3 texRef = mix(texRefB, texRefA, min(WReflectionParam, 1.0));
     fragColor.rgb = mix(fragColor.rgb, texRef, 0.5*dot(gm, posEye)); //somewhatfrog>>0.25>0.5
-
     //brightness correction
-    fragColor.rgb = pow(fragColor.rgb*0.35, vec3(1.0 / 2.2)); //somewhatfrog>>0.7>0.35
-
+    fragColor.rgb = pow(fragColor.rgb*0.34, vec3(1.0 / 2.2)); //somewhatfrog>>1.7>0.34
     //shore fade
     float banklevel = noise(vec2(42.0*uv.x+18.0*uv.y, 42.0*uv.y))+0.6;
     level = smoothstep(0.0, 1.5, 1.2-max(banklevel, level)*level*1.2); //somewhatfrog>>1.0>1.5
     levelf = max(banklevel, levelf)*levelf;
     fragColor = mix(fragColor, texture2D(WaterGroundTex, uv*10.0+refTexCoord*0.1)*1.3, max(0.0, level-0.3));
     //fragColor.xyz = vec3(banklevel);
-
     fragColor *= vertColour;
-
     fragColor.a = min(levelf, 1.0);
-
     //debug
     //fragColor.rgb = normalize(vec3dbg);
     //fragColor.rgb = vec3dbg;
@@ -361,4 +331,3 @@ void main()
 {
     mainImage(gl_FragColor, vec2(gl_FragCoord.x/WViewport.z, 1.0-gl_FragCoord.y/WViewport.w));
 }
-
